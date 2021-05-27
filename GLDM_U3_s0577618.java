@@ -232,44 +232,6 @@ public class GLDM_U3_s0577618 implements PlugIn {
 				}
 			}
 			
-			/*if (method.equals("Graustufen 5")) {
-
-				for (int y=0; y<height; y++) {
-					for (int x=0; x<width; x++) {
-						int pos = y*width + x;
-						int argb = origPixels[pos];  // Lesen der Originalwerte 
-
-						int r = (argb >> 16) & 0xff;
-						int g = (argb >>  8) & 0xff;
-						int b =  argb        & 0xff;
-						
-						//int stufen = 255 / 5; // in 5 Graustufen unterteilen
-						//double m = (r+g+b)/3; //Durchschnitt
-						
-						//double d = m/stufen; //Durchschnittswert
-						int d = (r+g+b)/3;
-						if(d <= 51) {
-							d = 0;
-						} else if(d <= 51 * 2) {
-							d = 51;
-						} else if(d <= 51*3) {
-							d = 51 * 2;
-						} else if(d <= 51 * 4) {
-							d = 51 * 3;
-						} else {
-							d = 255;
-						}
-						int rn = d;
-						int gn = d;
-						int bn = d;
-
-						// Hier muessen die neuen RGB-Werte wieder auf den Bereich von 0 bis 255 begrenzt werden
-
-						pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
-					}
-				}
-			}*/
-			
 			
 			if (method.equals("Graustufen 5")) {
 
@@ -283,8 +245,8 @@ public class GLDM_U3_s0577618 implements PlugIn {
 						int b =  argb        & 0xff;
 						
 						int m = (r+g+b)/3; //Durchschnitt
-						int stufen = 255/5; //in 5 Graustufen geteilt
-						int d = m / stufen * stufen;
+						int stufen = 255/4; //in 5 Graustufen geteilt
+						int d = m / stufen * stufen; //wird gerundet beim Teilen wegen int
 						int rn = d;
 						int gn = d;
 						int bn = d;
@@ -309,8 +271,8 @@ public class GLDM_U3_s0577618 implements PlugIn {
 						int b =  argb        & 0xff;
 						
 						int m = (r+g+b)/3; // Durchschnitt
-						int stufen = 255/10; //in 10 Graustufen geteilt
-						int d = m / stufen * stufen;
+						int stufen = 255/9; //in 10 Graustufen geteilt
+						int d = m / stufen * stufen; //wird gerundet beim Teilen wegen int
 						int rn = d;
 						int gn = d;
 						int bn = d;
@@ -322,7 +284,46 @@ public class GLDM_U3_s0577618 implements PlugIn {
 				}
 			}
 			
-			//Quelle: https://www.tutorialspoint.com/how-to-convert-a-colored-image-to-sepia-image-using-java-opencv-libraryhttps://www.tutorialspoint.com/how-to-convert-a-colored-image-to-sepia-image-using-java-opencv-library
+			//Quelle: https://youtu.be/0t8BHaLsXTM
+			if (method.equals("Binär mit horiz. Fehlerdiff.")) {
+
+				for (int y=0; y<height; y++) {
+					int error = 0;
+					for (int x=0; x<width; x++) {
+						int pos = y*width + x;
+						int argb = origPixels[pos];  // Lesen der Originalwerte 
+
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >>  8) & 0xff;
+						int b =  argb        & 0xff;
+						
+						int d = (r+g+b)/3 + error; //Durchschnittswert plus dem Fehler des letzten Pixels
+						int rn = d;
+						int gn = d;
+						int bn = d;
+						
+						int bw = 255 / 2; //mit dem int entscheiden ob Pixel schwarz wird oder weiß
+						
+						if(d < bw) {
+							rn = 0;
+							gn = 0;
+							bn = 0;
+							error = d;
+						} else {
+							rn = 255;
+							gn = 255;
+							bn = 255;
+							error = d - 255;
+						}
+						
+						// Hier muessen die neuen RGB-Werte wieder auf den Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
+					}
+				}
+			}
+			
+			//Quelle: https://www.tutorialspoint.com/how-to-convert-a-colored-image-to-sepia-image-using-java-opencv-library
 			if (method.equals("Sepia")) {
 
 				for (int y=0; y<height; y++) {
@@ -340,16 +341,19 @@ public class GLDM_U3_s0577618 implements PlugIn {
 						int gn = d + sepia;
 						int bn = d - 30;
 						
-						if(rn > 255) rn = 255;
-						if(gn > 255) gn = 255;
-						if(bn > 255) bn = 255;
-						if(bn < 0) bn = 0;
+						rn = Math.min(255, Math.max(0, rn));
+						gn = Math.min(255, Math.max(0, gn));
+						bn = Math.min(255, Math.max(0, bn));
+						
 						// Hier muessen die neuen RGB-Werte wieder auf den Bereich von 0 bis 255 begrenzt werden
 
 						pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
 					}
 				}
 			}
+			
+			
+
 
 	} // CustomWindow inner class
 		
