@@ -352,7 +352,66 @@ public class GLDM_U3_s0577618 implements PlugIn {
 				}
 			}
 			
-			
+			if (method.equals("6 Farben")) {
+
+				for (int y=0; y<height; y++) {
+					for (int x=0; x<width; x++) {
+						int pos = y*width + x;
+						int argb = origPixels[pos];  // Lesen der Originalwerte 
+
+						int r = (argb >> 16) & 0xff;
+						int g = (argb >>  8) & 0xff;
+						int b =  argb        & 0xff;
+						
+						//6 Farben herausgesucht mit https://imagecolorpicker.com/
+						//rgb(156,148,132) mittelbraun
+						//rgb(212,204,212) rosa-braun
+						//rgb(100,92,84) dunkelbraun
+						//rgb(44,100,140) blau
+						//rgb(108,132,164) hellblau
+						//rgb(36,36,36) dunkelgrau, fast schwarz
+						
+						int rn = r;
+						int gn = g;
+						int bn = b;
+						
+						if(rn < 80 && bn < 60) {
+							//schwarz/ grau
+							rn = 36;
+							gn = 36;
+							bn = 36;
+						} else if(rn < 100 && gn >= 100) {
+							//blau
+							rn = 44;
+							gn = 100;
+							bn = 140;
+						} else if(rn < 140 && bn < 130) {
+							// braun
+							rn = 100;
+							gn = 92;
+							bn = 84;
+						} else if(rn < 140 && bn < 190) {
+							//hellblau
+							rn = 108;
+							gn = 132;
+							bn = 164;
+						} else if(rn < 200 && gn < 170) {
+							//mittelbraun
+							rn = 156;
+							gn = 148;
+							bn = 132;
+						} else {
+							//rosa-braun
+							rn = 212;
+							gn = 204;
+							bn = 212;
+						}
+						// Hier muessen die neuen RGB-Werte wieder auf den Bereich von 0 bis 255 begrenzt werden
+
+						pixels[pos] = (0xFF<<24) | (rn<<16) | (gn<<8) | bn;
+					}
+				}
+			}
 
 
 	} // CustomWindow inner class
